@@ -1,0 +1,41 @@
+# Logs
+**/logs
+**/*.log
+**/npm-debug.log*
+
+# Dependency directories
+frontend/node_modules/
+backend/node_modules/
+
+# Build output
+frontend/build/
+frontend/dist/
+backend/dist/
+
+# dotenv files (DO NOT COMMIT THESE)
+**/.env
+**/.env.*  # Ignore all .env files like .env.production, .env.development, etc.
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# Misc
+*.tgz
+*.zip
+*.tar.gz
+
+# Debug output
+*.log
+
+# npm cache
+.npm/
+
+# Optional: if you're using Mac/Linux
+*.swp
+*.swo
+node_modules

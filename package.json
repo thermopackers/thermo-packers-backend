@@ -1,0 +1,39 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "scrape": "node scraper/scrapeReviews.js",
+    "start": "node api/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.3",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.5.48",
+    "mongoose": "^8.13.2",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nanoid": "^5.1.5",
+    "node-cron": "^4.0.5",
+    "nodemon": "^3.1.9",
+    "openai": "^4.95.1",
+    "pdfkit": "^0.17.1",
+    "puppeteer": "^24.7.1",
+    "react-google-login": "^5.2.2",
+    "slugify": "^1.6.6",
+    "uuid": "^11.1.0"
+  }
+}

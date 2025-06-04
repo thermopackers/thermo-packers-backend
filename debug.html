@@ -1,0 +1,60 @@
+<!DOCTYPE html><html><head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="robots" content="noindex, follow">
+        <title>IMStore</title>
+    </head>
+
+    <body>
+        <script type="text/javascript">
+            var storage = function () {
+                return {
+                    postMessage: function (a, b, c) {
+                        b && (c = c || parent, window.postMessage && c.postMessage(JSON.stringify(a), b.replace(/([^:]+:\/\/[^\/]+).*/, "$1")))
+                    }
+                }
+            }();
+            function fLoad(){
+                provideData("*", "*", document.referrer, true);
+            }
+            window.addEventListener ? addEventListener("message", receiveMessage, !1) : attachEvent("onmessage", receiveMessage);
+            window.addEventListener ? addEventListener("load", fLoad, !1) : attachEvent("onload", fLoad);
+            var check = { ims: { searches: 1024, cities: 1024, cities: 1024, mcatnames: 1024, mcats: 1024, cats: 1024, groups: 1024, sites: 1024, latLong: 1024, pdata: 1024, prodId: 1024, blsearches: 1024, location: 1024, prod_data: 20480, mcat_data: 20480, keyw_data: 10240, city_data: 10240, meta_data: 1024, rel_data: 20480, rel_prod: 20480, cntxt_txnmy: 40960, cntxt_sell: 20480, login_popup: 1024 }, "*": { "*": "*" }, ss: { ss: 1024, pdmTime: 1024 } };
+            function receiveMessage(a) {
+                var b = validate(a.data.modId, a.data.key, a.data.data);
+                "*" != a.data.modId && "*" != a.data.key && "*" != a.data.data && !0 == b && setData(a.data.modId, a.data.key, a.data.data);
+                provideData(a.data.modId, a.data.key, a.data.url, b)
+            }
+            function validate(a, b, c) {
+                return "undefined" == typeof (check[a] && check[a][b]) || "undefined" == typeof c || check[a][b] < JSON.stringify(c).length ? !1 : !0
+            }
+            function setData(a, b, c) {
+                if ("undefined" === typeof Storage)
+                    return null;
+                var d = parseJson(localStorage[a.toLowerCase()] || "{}");
+                d[b.toLowerCase()] = c;
+                localStorage[a.toLowerCase()] = JSON.stringify(d)
+            }
+            function provideData(a, b, c, d) {
+                if ("undefined" === typeof Storage)
+                    return null;
+                a = {};
+                if (d)
+                    try{
+                        for (b in localStorage)
+                            a[b] = localStorage[b];
+                    }catch(err){
+
+                    }
+                else
+                    a = !1;
+                storage.postMessage(a, c, parent)
+            }
+            function parseJson(a) {
+                return JSON ? JSON.parse(a) : eval("(" + a + ")")
+            }
+            ;
+        </script>
+    
+
+
+</body></html>
