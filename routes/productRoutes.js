@@ -1,5 +1,5 @@
 import express from 'express';
-import products from '../../frontend/src/data/products.js';
+import products from '../data/products.js';
 import { getAllBackendProducts, getAllProducts, getProductById, getProductBySlug, getProductsByCategory, inventory, updateProductInventory } from '../controllers/productController.js';
 
 // import { getProducts } from '../controllers/productController.js';
