@@ -1,5 +1,5 @@
 import express from "express";
-import { allProducts } from "../../frontend/src/data/products.js";  
+import allProducts from "../models/product.js";  
 import Chat from "../models/chat.js";
 import { OpenAI } from "openai";
 import dotenv from "dotenv";
