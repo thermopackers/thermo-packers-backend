@@ -23,10 +23,10 @@ const predefinedRoles = {
   
   'it.thermopackers@gmail.com': 'sales',
   'chaurasiyapradyumna5955@gmail.com': 'accounts',
-//   'pkchaurasiya5955@gmail.com': 'production',
-//   'devilaxmi3331@gmail.com': 'production',
-  'pkchaurasiya5955@gmail.com': 'dispatch',
-  'devilaxmi3331@gmail.com': 'packaging',
+  'pkchaurasiya5955@gmail.com': 'production',
+  'devilaxmi3331@gmail.com': 'production',
+//   'pkchaurasiya5955@gmail.com': 'dispatch',
+//   'devilaxmi3331@gmail.com': 'packaging',
 };
 
 export const loginWithGoogle = async (req, res) => {
