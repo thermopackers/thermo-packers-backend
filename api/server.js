@@ -92,6 +92,12 @@ app.use('/api/production-reports', productionReportsRoutes);
 app.use('/api/production-reports-block', blockMouldingRoutes);
 
 
+
+// Add this:
+app.get('/', (req, res) => {
+  res.json({ message: 'Backend is running!' });
+});
+
 // --- Fallback for Unknown Routes ---
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
