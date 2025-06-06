@@ -18,7 +18,7 @@ const predefinedRoles = {
   'it.thermopackers@gmail.com': 'accounts',
   'thermopackers@gmail.com': 'accounts',
   'prateek@thermopackers.com': 'admin',
-  '496saurabh@mail.com': 'admin',
+  '496saurabh@gmail.com': 'admin',
   'production.thermopackers@gmail.com': 'production',   //shape
   
 
