@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { startInventoryResetJob } from "../cron/inventoryReset.js";
+import { startRecurringTasksJob } from "../cron/recurringTasks.js";
 
 
 // Detect env file path based on NODE_ENV
@@ -60,6 +61,7 @@ mongoose.connect(process.env.MONGO_URI)
 
   // Start daily job
 startInventoryResetJob();
+startRecurringTasksJob();
 
 // --- Routes ---
 import adminRoutes from '../routes/adminRoutes.js';
