@@ -19,6 +19,11 @@ const toDoSchema = new mongoose.Schema(
       enum: ['NOT DONE', 'DONE'],
       default: 'NOT DONE',
     },
+    repeat: {
+  type: String,
+  enum: ['ONE_TIME', 'MONTHLY', 'YEARLY'],
+  default: 'ONE_TIME',
+},
     isDeletedByEmployee: {
   type: Boolean,
   default: false,

@@ -8,7 +8,7 @@ const router = express.Router();
 // Create a task (admin/accounts only)
 router.post('/create', authMiddleware(['admin', 'accounts']), async (req, res) => {
   console.log('POST /create called, user:', req.user);
-  const { title, description, assignedTo, dueDate } = req.body;
+  const { title, description, assignedTo, dueDate, repeat } = req.body;
 
   try {
     if (!['admin', 'accounts'].includes(req.user.role)) {
@@ -23,6 +23,8 @@ console.log('req.user:', req.user);
       assignedBy: req.user.id,
       assignedTo,
       dueDate,
+        repeat: repeat || 'ONE_TIME', // fallback to ONE_TIME
+
     });
 
     await task.save();

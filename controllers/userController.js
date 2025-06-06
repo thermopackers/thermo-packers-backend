@@ -10,21 +10,23 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Predefined roles mapped by email (use lowercase for safety)
 const predefinedRoles = {
-  // 'marketing1.thermopackers@gmail.com': 'sales',
-  // 'marketing2.thermopackers@gmail.com': 'sales',
-  // 'marketing5.thermopackers@gmail.com': 'sales',
-  // 'marketing3.thermopackers@gmail.com': 'dispatch',    //block
-  // 'packaging.thermopackers@gmail.com': 'packaging',
-  // 'it.thermopackers@gmail.com': 'accounts',
-  // 'thermopackers@gmail.com': 'accounts',
-  // 'prateek@thermopackers.com': 'admin',
-  // '496saurabh@mail.com': 'admin',
-  // 'production.thermopackers@gmail.com': 'production',   //shape
+  'marketing1.thermopackers@gmail.com': 'sales',
+  'marketing2.thermopackers@gmail.com': 'sales',
+  'marketing5.thermopackers@gmail.com': 'sales',
+  'marketing3.thermopackers@gmail.com': 'dispatch',    //block
+  'packaging.thermopackers@gmail.com': 'packaging',
+  'it.thermopackers@gmail.com': 'accounts',
+  'thermopackers@gmail.com': 'accounts',
+  'prateek@thermopackers.com': 'admin',
+  '496saurabh@mail.com': 'admin',
+  'production.thermopackers@gmail.com': 'production',   //shape
   
-  'it.thermopackers@gmail.com': 'sales',
-  'chaurasiyapradyumna5955@gmail.com': 'accounts',
-  'pkchaurasiya5955@gmail.com': 'production',
-  'devilaxmi3331@gmail.com': 'production',
+
+
+//   'it.thermopackers@gmail.com': 'sales',
+//   'chaurasiyapradyumna5955@gmail.com': 'accounts',
+//   'pkchaurasiya5955@gmail.com': 'production',
+//   'devilaxmi3331@gmail.com': 'production',
 //   'pkchaurasiya5955@gmail.com': 'dispatch',
 //   'devilaxmi3331@gmail.com': 'packaging',
 };
