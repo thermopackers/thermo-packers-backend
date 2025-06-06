@@ -120,7 +120,7 @@ export const issueAssets = async (req, res) => {
 
     const existingAsset = await Asset.findOne({ issuedTo });
     if (existingAsset) {
-      return res.status(400).json({ success: false, message: 'Assets already issued to this user.' });
+      return res.status(400).json({ success: false, message: 'Assets already issued to this user, To add more assets, go edit the users asset in Manage Assets.' });
     }
 
     const newAssetRecord = new Asset({
