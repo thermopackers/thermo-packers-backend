@@ -15,6 +15,8 @@ backend/dist/
 # dotenv files (DO NOT COMMIT THESE)
 **/.env
 **/.env.*  # Ignore all .env files like .env.production, .env.development, etc.
+.env.production
+.env.development
 
 # OS files
 .DS_Store
