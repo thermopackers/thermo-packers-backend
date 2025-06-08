@@ -51,7 +51,7 @@ if (NODE_ENV === 'development') {
 }
 
 // Serve static uploads
-app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 app.use('/uploads/slips', express.static(join(process.cwd(), 'uploads/slips')));
 
 // --- MongoDB Connection ---
