@@ -28,7 +28,7 @@ const __dirname = dirname(__filename);
 
 // Configure CORS
 const allowedOrigins = NODE_ENV === 'production'
-? ['https://thermopackers.com'] // ✅ Replace with your actual frontend prod domain
+? ['https://thermopackers.com','https://www.thermopackers.com'] // ✅ Replace with your actual frontend prod domain
 // ? ['https://1st-app-thermo-packers.vercel.app'] // ✅ Replace with your actual frontend prod domain
 : ['http://localhost:5173']; // Dev frontend URL
 
