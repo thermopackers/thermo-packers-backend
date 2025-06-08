@@ -41,3 +41,7 @@ Thumbs.db
 *.swp
 *.swo
 node_modules
+
+
+/uploads/products/
+/uploads/slips/
