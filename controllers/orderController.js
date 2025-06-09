@@ -5,6 +5,7 @@ import fs from "fs";
 import Order from "../models/Order.js";
 import Products from "../models/BackendProducts.js";
 import mongoose from "mongoose";
+import getNextShortOrderId from "../utils/generateShortId.js";
 
 // ✅ Create Order
 export const createOrder = async (req, res) => {
@@ -26,7 +27,8 @@ export const createOrder = async (req, res) => {
     } = req.body;
     const poCopy = req.file?.filename || "";
     const poOriginalName = req.file?.originalname || "";
-    const shortOrderId = `TP${nanoid(8)}`; // e.g., "AbC123xYZ0"
+    // const shortOrderId = `TP${nanoid(8)}`; // e.g., "AbC123xYZ0"
+const shortOrderId = await getNextShortOrderId();
 
     const newOrder = new Order({
       shortId: shortOrderId,
@@ -717,6 +719,8 @@ export const createMultiOrder = async (req, res) => {
 
     // ✅ STEP 2: Save each product as a new order under same PO
     for (const prod of products) {
+            const shortId = await getNextShortOrderId(); // 🔁 Sequential ID
+
       const order = new Order({
         customerName,
                 employeeId: req.user.id, // ✅ include employeeId
@@ -726,7 +730,7 @@ export const createMultiOrder = async (req, res) => {
         poCopy,
         poOriginalName,
         ...prod,
-        shortId: `TP${nanoid(8)}`,
+shortId
       });
 
       const saved = await order.save();
