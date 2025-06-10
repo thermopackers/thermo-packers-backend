@@ -5,7 +5,7 @@ import fs from "fs";
 import Order from "../models/Order.js";
 import Products from "../models/BackendProducts.js";
 import mongoose from "mongoose";
-import getNextShortOrderId from "../utils/generateShortId.js";
+import getNextShortOrderId from "../utils/getNextShortOrderId.js";
 
 // ✅ Create Order
 export const createOrder = async (req, res) => {
