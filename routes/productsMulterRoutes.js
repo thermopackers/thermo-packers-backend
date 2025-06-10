@@ -1,50 +1,38 @@
 // routes/products.js
 import express from "express";
-import multer from "multer";
+import upload from '../middleware/upload.js'; // ✅ path may vary
 import Product from "../models/BackendProducts.js";
 import fs from "fs";
 
 const router = express.Router();
 
 // Image storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = "./uploads/products";
-    fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     const uploadPath = "./uploads/products";
+//     fs.mkdirSync(uploadPath, { recursive: true });
+//     cb(null, uploadPath);
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = `${Date.now()}-${file.originalname}`;
+//     cb(null, uniqueName);
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 router.post("/", upload.array("images", 5), async (req, res) => {
   try {
-    const {
-      name,
-      unit,
-      sizes,
-      
-      quantity,
-    } = req.body;
-
-    const sizesArray = Array.isArray(sizes) ? sizes : JSON.parse(sizes);
+    const { name, unit, sizes, quantity } = req.body;
+    const sizesArray = Array.isArray(sizes) ? sizes : JSON.parse(sizes || "[]");
 
     const product = new Product({
       name,
       unit,
       sizes: sizesArray,
-     
       quantity,
+      images: req.files.map(file => file.path), // ✅ Cloudinary URLs
     });
-
-    // Save multiple images paths if any files uploaded
-    if (req.files && req.files.length > 0) {
-      product.images = req.files.map(file => `/uploads/products/${file.filename}`);
-    }
 
     await product.save();
     res.status(201).json({ message: "Product added", product });
@@ -53,6 +41,7 @@ router.post("/", upload.array("images", 5), async (req, res) => {
     res.status(500).json({ error: "Failed to add product" });
   }
 });
+
 
 
 // List products with pagination & search
@@ -92,6 +81,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", upload.array("images", 5), async (req, res) => {
   try {
     const { name, unit, sizes, quantity, removedImages } = req.body;
+
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ error: "Product not found" });
 
@@ -111,19 +101,19 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
     if (removed.length > 0) {
       product.images = (product.images || []).filter(img => !removed.includes(img));
 
-      // Optionally delete the files from disk (if stored locally)
-      removed.forEach((path) => {
-        const filePath = `./public${path}`;
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      });
+      // Optional: if you want to delete from local disk (safe to remove if using Cloudinary only)
+      // removed.forEach((path) => {
+      //   const filePath = `./public${path}`;
+      //   if (fs.existsSync(filePath)) {
+      //     fs.unlinkSync(filePath);
+      //   }
+      // });
     }
 
-    // ➕ Add new images
+    // ➕ Add new Cloudinary images
     if (req.files && req.files.length > 0) {
-      const newImagePaths = req.files.map(file => `/uploads/products/${file.filename}`);
-      product.images = [...(product.images || []), ...newImagePaths];
+      const newImageUrls = req.files.map(file => file.path); // ✅ Cloudinary URLs
+      product.images = [...(product.images || []), ...newImageUrls];
     }
 
     await product.save();
@@ -133,6 +123,7 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
     res.status(500).json({ error: "Failed to update product" });
   }
 });
+
 
 
 

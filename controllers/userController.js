@@ -13,9 +13,11 @@ const predefinedRoles = {
   'marketing1.thermopackers@gmail.com': 'sales',
   'marketing2.thermopackers@gmail.com': 'sales',
   'marketing5.thermopackers@gmail.com': 'sales',
+  'marketing6.thermopackers@gmail.com': 'sales',
   'marketing3.thermopackers@gmail.com': 'dispatch',    //block
   'packaging.thermopackers@gmail.com': 'packaging',
   'it.thermopackers@gmail.com': 'accounts',
+  'parminder@thermopackers.com': 'accounts',
   'thermopackers@gmail.com': 'accounts',
   'prateek@thermopackers.com': 'admin',
   '496saurabh@gmail.com': 'admin',
