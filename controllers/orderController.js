@@ -1,12 +1,11 @@
 import { nanoid } from "nanoid";
-import { generateShapeSlipPDF, generateCuttingSlipPDF, generatePackagingSlipPDF } from "../utils/slipGenerator.js";
+import { generateShapeSlipPDF, generateCuttingSlipPDF } from "../utils/slipGenerator.js";
 import path from "path";
 import fs from "fs";
 import Order from "../models/Order.js";
 import Products from "../models/BackendProducts.js";
 import mongoose from "mongoose";
 import getNextShortOrderId from "../utils/getNextShortOrderId.js";
-import { uploadSlipToCloudinary } from "../utils/uploadToCloudinary.js";
 
 // ✅ Create Order
 export const createOrder = async (req, res) => {
@@ -536,11 +535,10 @@ export const sendToDispatch = async (req, res) => {
 
       // Ensure folder exists
       fs.mkdirSync(path.dirname(slipPath), { recursive: true });
- // ✅ Upload to Cloudinary
-      const uploadedUrl = await uploadSlipToCloudinary(slipPath);
+
       order.cuttingSlip = {
         filename: slipFilename,
-        url: uploadedUrl,
+        url: `/uploads/slips/${slipFilename}`,
       };
       
       // ✅ Pass the updated data directly to PDF generator BEFORE saving
@@ -552,7 +550,7 @@ await order.save(); // Save afterward
         orderId: order._id,
         product: product.name,
         remainingStock: product.stock,
-        cuttingSlipUrl: uploadedUrl,
+        cuttingSlipUrl: order.cuttingSlip.url,
       });
     }
 
@@ -576,19 +574,11 @@ export const sendToPackaging = async (req, res) => {
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     // Optional: generate and save PDF using packagingRows here...
-// ✅ Generate local PDF
-    const filename = `${order.shortId}_packaging.pdf`;
-    const localPath = path.join("uploads", "slips", filename);
-    fs.mkdirSync(path.dirname(localPath), { recursive: true });
-
-    await generatePackagingSlipPDF(order, packagingRows, localPath);
-    // ✅ Upload to Cloudinary
-    const uploadedUrl = await uploadSlipToCloudinary(localPath);
 
     // Save file ref if needed
     order.packagingSlip = {
       filename: `${order.shortId}_packaging.pdf`,
-      url: uploadedUrl,
+      url: `/uploads/slips/${order.shortId}_packaging.pdf`,
     };
 
     order.readyForPackaging = true;
@@ -644,37 +634,21 @@ export const sendToProduction = async (req, res) => {
     const cuttingFilename = `${order.shortId}_cutting.pdf`;
     const cuttingPath = path.join(slipDir, cuttingFilename);
     await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
-const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ✅ add this
 
     // ✅ Shape Slip
     const shapeFilename = `${order.shortId}_shape.pdf`;
     const shapePath = path.join(slipDir, shapeFilename);
     await generateShapeSlipPDF(order, shapeRows, shapePath);
-    const shapeUrl = await uploadSlipToCloudinary(shapePath);
 
     // ✅ Save slip data
     order.cuttingSlip = {
       filename: cuttingFilename,
-      url: cuttingUrl,
+      url: `/uploads/slips/${cuttingFilename}`,
     };
     order.shapeSlip = {
       filename: shapeFilename,
-      url: shapeUrl,
+      url: `/uploads/slips/${shapeFilename}`,
     };
-// ✅ Mark which sections are required for production
-order.requiredSections = order.requiredSections || {};
-sections.forEach((section) => {
-  order.requiredSections[section] = true;
-});
-    // ✅ If blockMoulding is selected, mark for dispatch
-if (sections.includes("blockMoulding")) {
-  order.sentTo.dispatch = order.sentTo.dispatch || [];
-  if (!order.sentTo.dispatch.includes("blockMoulding")) {
-    order.sentTo.dispatch.push("blockMoulding");
-  }
-  order.dispatchStatus = "not dispatched";
-}
-
 
     // ✅ Save order
     await order.save();
