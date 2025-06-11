@@ -661,6 +661,20 @@ const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ✅ add this
       filename: shapeFilename,
       url: shapeUrl,
     };
+// ✅ Mark which sections are required for production
+order.requiredSections = order.requiredSections || {};
+sections.forEach((section) => {
+  order.requiredSections[section] = true;
+});
+    // ✅ If blockMoulding is selected, mark for dispatch
+if (sections.includes("blockMoulding")) {
+  order.sentTo.dispatch = order.sentTo.dispatch || [];
+  if (!order.sentTo.dispatch.includes("blockMoulding")) {
+    order.sentTo.dispatch.push("blockMoulding");
+  }
+  order.dispatchStatus = "not dispatched";
+}
+
 
     // ✅ Save order
     await order.save();
