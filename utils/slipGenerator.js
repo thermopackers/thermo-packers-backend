@@ -335,92 +335,122 @@ export const generateDanaSlipPDF = (order, rows, outputPath) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 30 });
     const stream = fs.createWriteStream(outputPath);
+
     doc.pipe(stream);
 
     const startX = 30;
-    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-    let y = doc.page.margins.top;
+    let y = 30;
 
-    // 💡 Header
-    doc.font("Helvetica-Bold").fontSize(14).text(
-      "EPS / THERMOCOL RAW BLOCK / THERMOCOL DANA ORDER SLIP",
+    const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+    doc.font("Helvetica-Bold").fontSize(12).text(
+      "EPS/THERMOCOL RAW BLOCK / THERMOCOL DANA ORDER SLIP",
       { align: "center" }
     );
+    y += 25;
 
-    y = doc.y + 10;
     doc.font("Helvetica").fontSize(10);
-    doc.text(`Order No: ${order.shortId}`, startX, y);
+    doc.text(`Order No: ${order.shortId || ""}`, startX, y);
+    y += 15;
 
-    y = doc.y + 10;
-    doc.font("Helvetica-Bold").text("Customer Nick Name: ", { continued: true });
-    doc.font("Helvetica").text((order.customerName || "").toUpperCase());
+    const customerName = (order.customerName || "..................").toUpperCase();
+    doc.font("Helvetica-Bold").text("Customer Nick Name: ", startX, y, { continued: true });
+    doc.font("Helvetica").text(customerName);
 
-    y = doc.y + 10;
-    const dateStr = `Date: ${new Date(order.createdAt).toLocaleDateString()}`;
-    doc.text(dateStr, startX, y);
+    const dateStr = `Date: ${new Date(order.createdAt).toLocaleDateString().toUpperCase()}`;
+    const dateWidth = doc.widthOfString(dateStr, { font: "Helvetica-Bold", size: 10 });
+    doc.font("Helvetica-Bold").text(dateStr, startX + usableWidth - dateWidth, y - 15);
 
-    y = doc.y + 20;
-    doc.font("Helvetica").text("Block Operator/Supervisor: __Sandeep__", startX, y);
+    y += 20;
+    doc.font("Helvetica").text("Block Operator/Supervisor:__Sandeep__", startX, y);
+    y += 20;
 
-    y = doc.y + 30;
+    const colRatios = [0.06, 0.21, 0.26, 0.15, 0.32];
+    const colWidths = colRatios.map(r => r * usableWidth);
 
-    // 💡 Table Config
-    const colWidths = [40, 120, 150, 100, 140];
     const headers = [
       "S.No.",
-      "Type of Raw Block",
-      "Density/Weight to Maintain",
-      "Quantity (Blocks)",
-      "Remarks (Instructions)",
+      "Type of Raw Block ...",
+      "Density in Kg/m3 and Weight to be maintained ...",
+      "Quantity (No of Blocks) ...",
+      "Remarks (Any special instructions ...) ",
     ];
 
-    const drawRow = (cells, y, isHeader = false) => {
-      doc.font(isHeader ? "Helvetica-Bold" : "Helvetica").fontSize(isHeader ? 9 : 9);
-      let x = startX;
+    doc.font("Helvetica-Bold").fontSize(6);
+    let x = startX;
+    const headerHeight = 70;
 
-      const rowHeight = 40;
-
-      cells.forEach((text, i) => {
-        doc.rect(x, y, colWidths[i], rowHeight).stroke();
-        doc.text(text, x + 5, y + 10, {
-          width: colWidths[i] - 10,
-          align: "left",
-        });
-        x += colWidths[i];
+    headers.forEach((text, i) => {
+      doc.rect(x, y, colWidths[i], headerHeight).stroke();
+      doc.text(text, x + 2, y + 2, {
+        width: colWidths[i] - 4,
+        align: "left",
       });
+      x += colWidths[i];
+    });
 
-      return y + rowHeight;
-    };
+    y += headerHeight;
 
-    // 🔁 Headers
-    y = drawRow(headers, y, true);
+    const dataRows = Array.isArray(rows) ? rows : [rows];
+    doc.font("Helvetica").fontSize(8.5);
 
-    // 🔁 Data Rows
-    rows.forEach((row, index) => {
-      const values = [
-        (index + 1).toString(),
+    dataRows.forEach((row, i) => {
+      const cells = [
+        (i + 1).toString(),
         row.productName || "",
         row.rawMaterial || "",
-        row.quantity?.toString() || "",
+        row.quantity || "",
         row.remarks || "",
       ];
 
-      // 📄 Page Break if too close to bottom
-      if (y + 50 > doc.page.height - doc.page.margins.bottom) {
+      const rowHeights = cells.map((text, j) =>
+        doc.heightOfString(text, {
+          width: colWidths[j] - 6,
+          align: "left",
+        })
+      );
+      const rowHeight = Math.max(...rowHeights) + 10;
+
+      if (y + rowHeight > doc.page.height - doc.page.margins.bottom) {
         doc.addPage();
         y = doc.page.margins.top;
-        y = drawRow(headers, y, true); // redraw headers on new page
+
+        // Redraw headers
+        x = startX;
+        doc.font("Helvetica-Bold").fontSize(6);
+        headers.forEach((text, i) => {
+          doc.rect(x, y, colWidths[i], headerHeight).stroke();
+          doc.text(text, x + 2, y + 2, {
+            width: colWidths[i] - 4,
+            align: "left",
+          });
+          x += colWidths[i];
+        });
+        y += headerHeight;
       }
 
-      y = drawRow(values, y);
+      x = startX;
+      cells.forEach((text, j) => {
+        doc.rect(x, y, colWidths[j], rowHeight).stroke();
+        doc.text(text, x + 3, y + 5, {
+          width: colWidths[j] - 6,
+          align: "left",
+        });
+        x += colWidths[j];
+      });
+
+      y += rowHeight;
     });
 
     doc.end();
 
-    stream.on("finish", resolve);
+  // ✅ Critical: only resolve after file is flushed to disk
+    stream.on("finish", () => {
+      // Just to be safe, wait a few milliseconds before resolving
+      setTimeout(resolve, 100); // Adjust to 100ms, not too long
+    });
     stream.on("error", reject);
   });
 };
-
 
 
