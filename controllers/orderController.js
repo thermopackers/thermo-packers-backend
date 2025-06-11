@@ -346,7 +346,6 @@ export const getOrdersForDispatchDashboard = async (req, res) => {
       page = 1,
       limit = 10,
       search = "",
-      section 
     } = req.query;
 
     const baseConditions = [
@@ -357,11 +356,6 @@ export const getOrdersForDispatchDashboard = async (req, res) => {
         ],
       },
     ];
-    if (section) {
-      baseConditions.push({
-        "sentTo.dispatch": section,
-      });
-    }
 
     if (status) {
       baseConditions.push({ dispatchStatus: status.trim().toLowerCase() });
@@ -667,13 +661,6 @@ const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ✅ add this
       filename: shapeFilename,
       url: shapeUrl,
     };
-
-    // ✅ Mark which sections are required for production
-order.requiredSections = order.requiredSections || {};
-sections.forEach((section) => {
-  order.requiredSections[section] = true;
-});
-
 
     // ✅ Save order
     await order.save();
