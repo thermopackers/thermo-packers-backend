@@ -660,10 +660,9 @@ export const sendToProduction = async (req, res) => {
     // ✅ Dana Slip (if blockMoulding is included)
       const danaFilename = `${order.shortId}_dana.pdf`;
       const danaPath = path.join(slipDir, danaFilename);
-      console.log("📄 danaRows received:", danaRows);
-
-const formattedDanaRows = Array.isArray(danaRows) ? danaRows : [danaRows];
-await generateDanaSlipPDF(order, formattedDanaRows, danaPath);
+      await generateDanaSlipPDF(order, danaRows, danaPath);
+      // ✅ Artificial delay before upload
+await new Promise((res) => setTimeout(res, 500));
       const danaUrl = await uploadSlipToCloudinary(danaPath);
       order.danaSlip = {
         filename: danaFilename,

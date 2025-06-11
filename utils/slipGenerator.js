@@ -445,7 +445,9 @@ console.log("📄 Dana Row in PDF:", row);
 
     doc.end();
 
-    stream.on("finish", resolve);
+  stream.on("finish", () => {
+      setTimeout(() => resolve(), 200); // ✅ slight delay to flush file
+    });    
     stream.on("error", reject);
   });
 };
