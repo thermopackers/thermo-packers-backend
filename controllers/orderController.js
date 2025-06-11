@@ -6,6 +6,7 @@ import Order from "../models/Order.js";
 import Products from "../models/BackendProducts.js";
 import mongoose from "mongoose";
 import getNextShortOrderId from "../utils/getNextShortOrderId.js";
+import { uploadSlipToCloudinary } from "../utils/uploadToCloudinary.js";
 
 // ✅ Create Order
 export const createOrder = async (req, res) => {
@@ -500,7 +501,6 @@ export const sendToDispatch = async (req, res) => {
 
     const failedOrders = [];
     const updatedOrders = [];
-    const backendUrl = process.env.BACKEND_BASE_URL;
 
     for (const orderId of orderIds) {
       const order = await Order.findById(orderId);
@@ -539,8 +539,7 @@ export const sendToDispatch = async (req, res) => {
 
       order.cuttingSlip = {
         filename: slipFilename,
-                url: `${backendUrl}/uploads/slips/${slipFilename}`, // ✅ Full URL
-
+        url: `/uploads/slips/${slipFilename}`,
       };
       
       // ✅ Pass the updated data directly to PDF generator BEFORE saving
@@ -575,27 +574,34 @@ export const sendToPackaging = async (req, res) => {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Optional: generate and save PDF using packagingRows here...
+    // ✅ Generate local PDF
+    const filename = `${order.shortId}_packaging.pdf`;
+    const localPath = path.join("uploads", "slips", filename);
+    fs.mkdirSync(path.dirname(localPath), { recursive: true });
 
-    // Save file ref if needed
+    await generatePackagingSlipPDF(order, packagingRows, localPath);
+
+    // ✅ Upload to Cloudinary
+    const uploadedUrl = await uploadSlipToCloudinary(localPath);
+
+    // ✅ Save Cloudinary URL
     order.packagingSlip = {
-      filename: `${order.shortId}_packaging.pdf`,
-url: `${process.env.BACKEND_BASE_URL}/uploads/slips/${order.shortId}_packaging.pdf`,
+      filename,
+      url: uploadedUrl,
     };
 
     order.readyForPackaging = true;
-    order.packagingStatus = "unpackaged"; // ✅ NEW
-
-    order.sentTo.dispatchReady = false; // ensure not in dispatch dashboard
+    order.packagingStatus = "unpackaged";
+    order.sentTo.dispatchReady = false;
 
     await order.save();
 
-    return res.json({ success: true });
+    return res.json({ success: true, slipUrl: uploadedUrl });
   } catch (err) {
     console.error("Failed to send to packaging:", err);
     return res.status(500).json({ message: "Server error" });
   }
-}
+};
 
 export const sendToProduction = async (req, res) => {
   try {
@@ -642,16 +648,14 @@ export const sendToProduction = async (req, res) => {
     const shapePath = path.join(slipDir, shapeFilename);
     await generateShapeSlipPDF(order, shapeRows, shapePath);
 
-    // ✅ Use full URL
-    const baseUrl = process.env.BACKEND_BASE_URL;
-
+    // ✅ Save slip data
     order.cuttingSlip = {
       filename: cuttingFilename,
-      url: `${baseUrl}/uploads/slips/${cuttingFilename}`,
+      url: `/uploads/slips/${cuttingFilename}`,
     };
     order.shapeSlip = {
       filename: shapeFilename,
-      url: `${baseUrl}/uploads/slips/${shapeFilename}`,
+      url: `/uploads/slips/${shapeFilename}`,
     };
 
     // ✅ Save order
