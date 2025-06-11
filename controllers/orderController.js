@@ -1,11 +1,12 @@
 import { nanoid } from "nanoid";
-import { generateShapeSlipPDF, generateCuttingSlipPDF } from "../utils/slipGenerator.js";
+import { generateShapeSlipPDF, generateCuttingSlipPDF, generatePackagingSlipPDF } from "../utils/slipGenerator.js";
 import path from "path";
 import fs from "fs";
 import Order from "../models/Order.js";
 import Products from "../models/BackendProducts.js";
 import mongoose from "mongoose";
 import getNextShortOrderId from "../utils/getNextShortOrderId.js";
+import { uploadSlipToCloudinary } from "../utils/uploadToCloudinary.js";
 
 // ✅ Create Order
 export const createOrder = async (req, res) => {
@@ -536,13 +537,14 @@ export const sendToDispatch = async (req, res) => {
       // Ensure folder exists
       fs.mkdirSync(path.dirname(slipPath), { recursive: true });
 
-      order.cuttingSlip = {
-        filename: slipFilename,
-        url: `/uploads/slips/${slipFilename}`,
-      };
-      
-      // ✅ Pass the updated data directly to PDF generator BEFORE saving
-generateCuttingSlipPDF({ ...order.toObject(), sentTo: { ...order.sentTo } }, cuttingRows, slipPath);
+      generateCuttingSlipPDF({ ...order.toObject(), sentTo: { ...order.sentTo } }, cuttingRows, slipPath);
+
+const cuttingUrl = await uploadSlipToCloudinary(slipPath); // ⬅️ Add this
+
+order.cuttingSlip = {
+  filename: slipFilename,
+  url: cuttingUrl,
+};
 
 await order.save(); // Save afterward
 
@@ -573,18 +575,28 @@ export const sendToPackaging = async (req, res) => {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Optional: generate and save PDF using packagingRows here...
+    // ✅ Ensure folder exists
+    const slipDir = path.join("uploads", "slips");
+    fs.mkdirSync(slipDir, { recursive: true });
 
-    // Save file ref if needed
+    // ✅ Generate and save packaging slip PDF
+    const filename = `${order.shortId}_packaging.pdf`;
+    const localPath = path.join(slipDir, filename);
+
+    await generatePackagingSlipPDF(order, packagingRows, localPath);
+
+    // ✅ Upload to Cloudinary
+    const cloudinaryUrl = await uploadSlipToCloudinary(localPath);
+
+    // ✅ Save slip URL and mark packaging status
     order.packagingSlip = {
-      filename: `${order.shortId}_packaging.pdf`,
-      url: `/uploads/slips/${order.shortId}_packaging.pdf`,
+      filename,
+      url: cloudinaryUrl,
     };
 
     order.readyForPackaging = true;
-    order.packagingStatus = "unpackaged"; // ✅ NEW
-
-    order.sentTo.dispatchReady = false; // ensure not in dispatch dashboard
+    order.packagingStatus = "unpackaged";
+    order.sentTo.dispatchReady = false;
 
     await order.save();
 
@@ -593,7 +605,8 @@ export const sendToPackaging = async (req, res) => {
     console.error("Failed to send to packaging:", err);
     return res.status(500).json({ message: "Server error" });
   }
-}
+};
+
 
 export const sendToProduction = async (req, res) => {
   try {
@@ -630,25 +643,28 @@ export const sendToProduction = async (req, res) => {
     const slipDir = path.join("uploads", "slips");
     fs.mkdirSync(slipDir, { recursive: true });
 
-    // ✅ Cutting Slip
-    const cuttingFilename = `${order.shortId}_cutting.pdf`;
-    const cuttingPath = path.join(slipDir, cuttingFilename);
-    await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
+  // ✅ Cutting Slip
+const cuttingFilename = `${order.shortId}_cutting.pdf`;
+const cuttingPath = path.join(slipDir, cuttingFilename);
+await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
+const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ⬅️ Add this
 
-    // ✅ Shape Slip
-    const shapeFilename = `${order.shortId}_shape.pdf`;
-    const shapePath = path.join(slipDir, shapeFilename);
-    await generateShapeSlipPDF(order, shapeRows, shapePath);
+// ✅ Shape Slip
+const shapeFilename = `${order.shortId}_shape.pdf`;
+const shapePath = path.join(slipDir, shapeFilename);
+await generateShapeSlipPDF(order, shapeRows, shapePath);
+const shapeUrl = await uploadSlipToCloudinary(shapePath); // ⬅️ Add this
 
-    // ✅ Save slip data
-    order.cuttingSlip = {
-      filename: cuttingFilename,
-      url: `/uploads/slips/${cuttingFilename}`,
-    };
-    order.shapeSlip = {
-      filename: shapeFilename,
-      url: `/uploads/slips/${shapeFilename}`,
-    };
+// ✅ Save slip data
+order.cuttingSlip = {
+  filename: cuttingFilename,
+  url: cuttingUrl,
+};
+order.shapeSlip = {
+  filename: shapeFilename,
+  url: shapeUrl,
+};
+
 
     // ✅ Save order
     await order.save();
