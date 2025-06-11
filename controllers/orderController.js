@@ -346,6 +346,7 @@ export const getOrdersForDispatchDashboard = async (req, res) => {
       page = 1,
       limit = 10,
       search = "",
+      section 
     } = req.query;
 
     const baseConditions = [
@@ -356,6 +357,11 @@ export const getOrdersForDispatchDashboard = async (req, res) => {
         ],
       },
     ];
+    if (section) {
+      baseConditions.push({
+        "sentTo.dispatch": section,
+      });
+    }
 
     if (status) {
       baseConditions.push({ dispatchStatus: status.trim().toLowerCase() });
