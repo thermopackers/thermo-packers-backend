@@ -536,10 +536,11 @@ export const sendToDispatch = async (req, res) => {
 
       // Ensure folder exists
       fs.mkdirSync(path.dirname(slipPath), { recursive: true });
-
+ // ✅ Upload to Cloudinary
+      const uploadedUrl = await uploadSlipToCloudinary(slipPath);
       order.cuttingSlip = {
         filename: slipFilename,
-        url: `/uploads/slips/${slipFilename}`,
+        url: uploadedUrl,
       };
       
       // ✅ Pass the updated data directly to PDF generator BEFORE saving
@@ -551,7 +552,7 @@ await order.save(); // Save afterward
         orderId: order._id,
         product: product.name,
         remainingStock: product.stock,
-        cuttingSlipUrl: order.cuttingSlip.url,
+        cuttingSlipUrl: uploadedUrl,
       });
     }
 
@@ -643,6 +644,7 @@ export const sendToProduction = async (req, res) => {
     const cuttingFilename = `${order.shortId}_cutting.pdf`;
     const cuttingPath = path.join(slipDir, cuttingFilename);
     await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
+const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ✅ add this
 
     // ✅ Shape Slip
     const shapeFilename = `${order.shortId}_shape.pdf`;
