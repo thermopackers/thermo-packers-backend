@@ -500,6 +500,7 @@ export const sendToDispatch = async (req, res) => {
 
     const failedOrders = [];
     const updatedOrders = [];
+    const backendUrl = process.env.BACKEND_BASE_URL;
 
     for (const orderId of orderIds) {
       const order = await Order.findById(orderId);
@@ -538,7 +539,8 @@ export const sendToDispatch = async (req, res) => {
 
       order.cuttingSlip = {
         filename: slipFilename,
-        url: `/uploads/slips/${slipFilename}`,
+                url: `${backendUrl}/uploads/slips/${slipFilename}`, // ✅ Full URL
+
       };
       
       // ✅ Pass the updated data directly to PDF generator BEFORE saving
@@ -578,7 +580,7 @@ export const sendToPackaging = async (req, res) => {
     // Save file ref if needed
     order.packagingSlip = {
       filename: `${order.shortId}_packaging.pdf`,
-      url: `/uploads/slips/${order.shortId}_packaging.pdf`,
+url: `${process.env.BACKEND_BASE_URL}/uploads/slips/${order.shortId}_packaging.pdf`,
     };
 
     order.readyForPackaging = true;
@@ -640,14 +642,16 @@ export const sendToProduction = async (req, res) => {
     const shapePath = path.join(slipDir, shapeFilename);
     await generateShapeSlipPDF(order, shapeRows, shapePath);
 
-    // ✅ Save slip data
+    // ✅ Use full URL
+    const baseUrl = process.env.BACKEND_BASE_URL;
+
     order.cuttingSlip = {
       filename: cuttingFilename,
-      url: `/uploads/slips/${cuttingFilename}`,
+      url: `${baseUrl}/uploads/slips/${cuttingFilename}`,
     };
     order.shapeSlip = {
       filename: shapeFilename,
-      url: `/uploads/slips/${shapeFilename}`,
+      url: `${baseUrl}/uploads/slips/${shapeFilename}`,
     };
 
     // ✅ Save order
