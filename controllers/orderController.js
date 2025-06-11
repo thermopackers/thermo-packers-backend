@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { generateShapeSlipPDF, generateCuttingSlipPDF } from "../utils/slipGenerator.js";
+import { generateShapeSlipPDF, generateCuttingSlipPDF, generatePackagingSlipPDF } from "../utils/slipGenerator.js";
 import path from "path";
 import fs from "fs";
 import Order from "../models/Order.js";
@@ -574,34 +574,35 @@ export const sendToPackaging = async (req, res) => {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // ✅ Generate local PDF
+    // Optional: generate and save PDF using packagingRows here...
+// ✅ Generate local PDF
     const filename = `${order.shortId}_packaging.pdf`;
     const localPath = path.join("uploads", "slips", filename);
     fs.mkdirSync(path.dirname(localPath), { recursive: true });
 
     await generatePackagingSlipPDF(order, packagingRows, localPath);
-
     // ✅ Upload to Cloudinary
     const uploadedUrl = await uploadSlipToCloudinary(localPath);
 
-    // ✅ Save Cloudinary URL
+    // Save file ref if needed
     order.packagingSlip = {
-      filename,
+      filename: `${order.shortId}_packaging.pdf`,
       url: uploadedUrl,
     };
 
     order.readyForPackaging = true;
-    order.packagingStatus = "unpackaged";
-    order.sentTo.dispatchReady = false;
+    order.packagingStatus = "unpackaged"; // ✅ NEW
+
+    order.sentTo.dispatchReady = false; // ensure not in dispatch dashboard
 
     await order.save();
 
-    return res.json({ success: true, slipUrl: uploadedUrl });
+    return res.json({ success: true });
   } catch (err) {
     console.error("Failed to send to packaging:", err);
     return res.status(500).json({ message: "Server error" });
   }
-};
+}
 
 export const sendToProduction = async (req, res) => {
   try {
