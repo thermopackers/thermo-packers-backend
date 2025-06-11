@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { generateShapeSlipPDF, generateCuttingSlipPDF, generatePackagingSlipPDF } from "../utils/slipGenerator.js";
+import { generateShapeSlipPDF, generateCuttingSlipPDF, generatePackagingSlipPDF, generateDanaSlipPDF } from "../utils/slipGenerator.js";
 import path from "path";
 import fs from "fs";
 import Order from "../models/Order.js";
