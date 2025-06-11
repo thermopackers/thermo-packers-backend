@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import path from "path"; // ✅ FIXED: Use Node's path module
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,9 +16,12 @@ cloudinary.config({
  */
 export const uploadSlipToCloudinary = async (localPath, folder = "slips") => {
   try {
+    const fileName = path.basename(localPath, path.extname(localPath)); // remove extension
+
     const result = await cloudinary.uploader.upload(localPath, {
       resource_type: "raw", // for PDFs
       folder,
+        public_id: fileName, // ensures .pdf is preserved in the final URL
     });
 
     fs.unlinkSync(localPath); // ✅ Delete local file after upload
