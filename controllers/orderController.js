@@ -648,15 +648,16 @@ export const sendToProduction = async (req, res) => {
     const shapeFilename = `${order.shortId}_shape.pdf`;
     const shapePath = path.join(slipDir, shapeFilename);
     await generateShapeSlipPDF(order, shapeRows, shapePath);
+    const shapeUrl = await uploadSlipToCloudinary(shapePath);
 
     // ✅ Save slip data
     order.cuttingSlip = {
       filename: cuttingFilename,
-      url: `/uploads/slips/${cuttingFilename}`,
+      url: cuttingUrl,
     };
     order.shapeSlip = {
       filename: shapeFilename,
-      url: `/uploads/slips/${shapeFilename}`,
+      url: shapeUrl,
     };
 
     // ✅ Save order
