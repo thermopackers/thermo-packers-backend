@@ -611,7 +611,13 @@ export const sendToPackaging = async (req, res) => {
 export const sendToProduction = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const { sections, remainingToProduce, cuttingRows = [], shapeRows = [] } = req.body;
+    const {
+      sections,
+      remainingToProduce,
+      cuttingRows = [],
+      shapeRows = [],
+      danaRows = [], // ✅ Accept danaRows from frontend
+    } = req.body;
 
     if (
       !orderId ||
@@ -622,60 +628,66 @@ export const sendToProduction = async (req, res) => {
       return res.status(400).json({ message: "Order ID or sections missing." });
     }
 
-    // ✅ Ensure order exists before modifying
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Update production sections without overwriting
     sections.forEach((section) => {
       if (!order.sentTo.production.includes(section)) {
         order.sentTo.production.push(section);
       }
     });
 
-    // ✅ Update status and remaining
     order.status = "in process";
     order.sentTo.remainingToProduce = remainingToProduce;
 
-    // ✅ Slips folder
     const slipDir = path.join("uploads", "slips");
     fs.mkdirSync(slipDir, { recursive: true });
 
-  // ✅ Cutting Slip
-const cuttingFilename = `${order.shortId}_cutting.pdf`;
-const cuttingPath = path.join(slipDir, cuttingFilename);
-await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
-const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ⬅️ Add this
+    // ✅ Cutting Slip
+    const cuttingFilename = `${order.shortId}_cutting.pdf`;
+    const cuttingPath = path.join(slipDir, cuttingFilename);
+    await generateCuttingSlipPDF(order, cuttingRows, cuttingPath);
+    const cuttingUrl = await uploadSlipToCloudinary(cuttingPath);
 
-// ✅ Shape Slip
-const shapeFilename = `${order.shortId}_shape.pdf`;
-const shapePath = path.join(slipDir, shapeFilename);
-await generateShapeSlipPDF(order, shapeRows, shapePath);
-const shapeUrl = await uploadSlipToCloudinary(shapePath); // ⬅️ Add this
+    // ✅ Shape Slip
+    const shapeFilename = `${order.shortId}_shape.pdf`;
+    const shapePath = path.join(slipDir, shapeFilename);
+    await generateShapeSlipPDF(order, shapeRows, shapePath);
+    const shapeUrl = await uploadSlipToCloudinary(shapePath);
 
-// ✅ Save slip data
-order.cuttingSlip = {
-  filename: cuttingFilename,
-  url: cuttingUrl,
-};
-order.shapeSlip = {
-  filename: shapeFilename,
-  url: shapeUrl,
-};
+    // ✅ Dana Slip (if blockMoulding is included)
+    if (sections.includes("blockMoulding")) {
+      const danaFilename = `${order.shortId}_dana.pdf`;
+      const danaPath = path.join(slipDir, danaFilename);
+      await generateDanaSlipPDF(order, danaRows, danaPath);
+      const danaUrl = await uploadSlipToCloudinary(danaPath);
+      order.danaSlip = {
+        filename: danaFilename,
+        url: danaUrl,
+      };
+    }
 
+    // ✅ Save all slips
+    order.cuttingSlip = {
+      filename: cuttingFilename,
+      url: cuttingUrl,
+    };
+    order.shapeSlip = {
+      filename: shapeFilename,
+      url: shapeUrl,
+    };
 
-    // ✅ Save order
     await order.save();
 
-  
     res.status(200).json({ message: "Order sent to production", order });
   } catch (error) {
     console.error("❌ Error in sendToProduction:", error);
     res.status(500).json({ message: "Failed to update order", error: error.message });
   }
 };
+
 
 
 export const markReadyForDispatch = async (req, res) => {
