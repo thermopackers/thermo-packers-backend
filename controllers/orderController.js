@@ -658,29 +658,17 @@ export const sendToProduction = async (req, res) => {
     const shapeUrl = await uploadSlipToCloudinary(shapePath);
 
     // ✅ Dana Slip (if blockMoulding is included)
-     if (Array.isArray(danaRows) && danaRows.length > 0) {
-  const danaFilename = `${order.shortId}_dana.pdf`;
-  const danaPath = path.join(slipDir, danaFilename);
-  const formattedDanaRows = danaRows.map(row => ({
-    productName: row.productName || "N/A",
-    rawMaterial: row.rawMaterial || "0",
-    quantity: row.quantity || "0",
-    remarks: row.remarks || "-",
-  }));
+      const danaFilename = `${order.shortId}_dana.pdf`;
+      const danaPath = path.join(slipDir, danaFilename);
+      console.log("📄 danaRows received:", danaRows);
 
-  console.log("📄 Generating Dana slip with rows:", formattedDanaRows); // 🪵 Debug log
-
-  await generateDanaSlipPDF(order, formattedDanaRows, danaPath);
-  const danaUrl = await uploadSlipToCloudinary(danaPath);
-
-  order.danaSlip = {
-    filename: danaFilename,
-    url: danaUrl,
-  };
-} else {
-  console.warn("⚠️ Dana slip skipped — no danaRows provided.");
-}
-
+const formattedDanaRows = Array.isArray(danaRows) ? danaRows : [danaRows];
+await generateDanaSlipPDF(order, formattedDanaRows, danaPath);
+      const danaUrl = await uploadSlipToCloudinary(danaPath);
+      order.danaSlip = {
+        filename: danaFilename,
+        url: danaUrl,
+      };
 
     // ✅ Save all slips
     order.cuttingSlip = {

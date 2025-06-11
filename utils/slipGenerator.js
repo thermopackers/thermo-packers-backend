@@ -402,6 +402,7 @@ export const generateDanaSlipPDF = (order, rows, outputPath) => {
         row.quantity || "",
         row.remarks || "",
       ];
+console.log("📄 Dana Row in PDF:", row);
 
       const rowHeights = cells.map((text, j) =>
         doc.heightOfString(text, {
