@@ -658,7 +658,6 @@ export const sendToProduction = async (req, res) => {
     const shapeUrl = await uploadSlipToCloudinary(shapePath);
 
     // ✅ Dana Slip (if blockMoulding is included)
-    if (sections.includes("blockMoulding")) {
       const danaFilename = `${order.shortId}_dana.pdf`;
       const danaPath = path.join(slipDir, danaFilename);
       await generateDanaSlipPDF(order, danaRows, danaPath);
@@ -667,7 +666,6 @@ export const sendToProduction = async (req, res) => {
         filename: danaFilename,
         url: danaUrl,
       };
-    }
 
     // ✅ Save all slips
     order.cuttingSlip = {
