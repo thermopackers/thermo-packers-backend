@@ -662,6 +662,13 @@ const cuttingUrl = await uploadSlipToCloudinary(cuttingPath); // ✅ add this
       url: shapeUrl,
     };
 
+    // ✅ Mark which sections are required for production
+order.requiredSections = order.requiredSections || {};
+sections.forEach((section) => {
+  order.requiredSections[section] = true;
+});
+
+
     // ✅ Save order
     await order.save();
 
