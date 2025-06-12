@@ -71,6 +71,7 @@ import userRoutes from '../routes/userRoutes.js';
 import orderRoutes from '../routes/orderRoutes.js';
 import productRoutes from '../routes/productRoutes.js';
 import fileRoutes from '../routes/fileRoutes.js';
+import notificationRoutes from '../routes/notificationRoutes.js';
 import todosRouter from '../routes/todoRoutes.js';
 import customerRoutes from '../routes/customerRoutes.js';
 import productionReportsRoutes from '../routes/productionReportsRoutes.js';
@@ -92,6 +93,7 @@ app.post('/api/slips/packaging', createPackagingSlip);
 app.post('/api/slips/dana', createDanaSlip);
 app.use("/api/products-multer", productsMulterRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use('/api/production-reports', productionReportsRoutes);
 app.use('/api/production-reports-block', blockMouldingRoutes);
 

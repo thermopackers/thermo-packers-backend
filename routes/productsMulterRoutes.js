@@ -6,21 +6,6 @@ import fs from "fs";
 
 const router = express.Router();
 
-// Image storage
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     const uploadPath = "./uploads/products";
-//     fs.mkdirSync(uploadPath, { recursive: true });
-//     cb(null, uploadPath);
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueName = `${Date.now()}-${file.originalname}`;
-//     cb(null, uniqueName);
-//   },
-// });
-
-// const upload = multer({ storage });
-
 router.post("/", upload.array("images", 5), async (req, res) => {
   try {
     const { name, unit, sizes, quantity } = req.body;
@@ -101,13 +86,7 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
     if (removed.length > 0) {
       product.images = (product.images || []).filter(img => !removed.includes(img));
 
-      // Optional: if you want to delete from local disk (safe to remove if using Cloudinary only)
-      // removed.forEach((path) => {
-      //   const filePath = `./public${path}`;
-      //   if (fs.existsSync(filePath)) {
-      //     fs.unlinkSync(filePath);
-      //   }
-      // });
+    
     }
 
     // ➕ Add new Cloudinary images

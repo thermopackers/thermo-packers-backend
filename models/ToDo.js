@@ -30,7 +30,9 @@ const toDoSchema = new mongoose.Schema(
 },
 
     notes: String,
-    files: [String], // optional file URLs or file names
+    images: [String],
+   files: [{ type: String }],        // images assigned with task
+doneFiles: [{ type: String }],    // images uploaded by employee
     dueDate: Date,
     doneRemarks: { type: String, default: '' },
 doneOn: { type: Date },

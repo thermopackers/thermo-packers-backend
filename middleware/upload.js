@@ -10,10 +10,12 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
+   params: async (req, file) => ({
     folder: 'assets',
-    allowed_formats: ['jpg', 'jpeg', 'png'],
-  },
+    resource_type: 'auto', // ✅ auto-detects images or pdfs
+    public_id: `${Date.now()}-${file.originalname}`, // Optional: more control over naming
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'], // ✅ allow pdf
+  }),
 });
 
 const upload = multer({ storage });
