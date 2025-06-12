@@ -260,24 +260,5 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// PATCH /api/todos/:id/hide - Hide task from employee view
-router.patch("/:id/hide", authMiddleware(), async (req, res) => {
-  try {
-    const updatedTask = await ToDo.findByIdAndUpdate(
-      req.params.id,
-      { isDeletedByEmployee: true },
-      { new: true }
-    );
-
-    if (!updatedTask) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    res.json({ message: "Task hidden from employee view", task: updatedTask });
-  } catch (error) {
-    console.error("Error hiding task:", error);
-    res.status(500).json({ message: "Server error while hiding task" });
-  }
-});
 
 export default router;

@@ -45,14 +45,6 @@ export async function generateCuttingSlipPDF(order, rows = [], filePath) {
     doc.text("To. Sheets Cutting Supervisor: __Sunny__");
     doc.moveDown();
 
-    if (sections.length) {
-      doc.text("Sections: ", { continued: true })
-        .font("Helvetica-Bold")
-        .text(formatSectionLabels(sections))
-        .font("Helvetica");
-      doc.moveDown();
-    }
-
     const startX = 40;
     let y = doc.y + 10;
 
@@ -370,10 +362,10 @@ export const generateDanaSlipPDF = (order, rows, outputPath) => {
 
     const headers = [
       "S.No.",
-      "Type of Raw Block ...",
-      "Density in Kg/m3 and Weight to be maintained ...",
-      "Quantity (No of Blocks) ...",
-      "Remarks (Any special instructions ...) ",
+      "Type of Raw Block (Mention Full Raw without both Gutka, Block with Both Gutka On, Block with only Bottom Gutka On)",
+       "Density in Kg/m3 and Weight to be maintained (If FR mention in bold Letter), How much Recycled dana to be added, (Recycled dana 3-4 Kgs to be added only in Material above Density 14Kg/m3) ----------- Mention Density of Thermocol Dana - For ND Dana, Mention ND 2nd Pass or Density 8-10Kg/m3, For Concrete Dana, Mention Bead Size 2-3mm and Density 18-20Kg/m3",
+       "Quantity (No of Blocks) ------------ Quantity in Kgs for Thermocol Dana",
+       "Remarks (Any special instructions what to be mentioned on block or if Recycled dana to be added or not, any special Grade Raw material to be used, Number of Raw Material bags to be processed) ------------ For Thermocol Dana/Beads mention Beads Packaging",
     ];
 
     doc.font("Helvetica-Bold").fontSize(6);

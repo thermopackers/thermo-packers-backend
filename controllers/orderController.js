@@ -678,6 +678,7 @@ await new Promise((res) => setTimeout(res, 500));
       filename: shapeFilename,
       url: shapeUrl,
     };
+order.sentTo.dispatchReady = true; // ✅ Make sure it goes to dispatch dashboard
 
     await order.save();
 
