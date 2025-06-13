@@ -19,15 +19,15 @@ const predefinedRoles = {
   'it.thermopackers@gmail.com': 'accounts',
   'parminder@thermopackers.com': 'accounts',
   'thermopackers@gmail.com': 'accounts',
-  'prateek@thermopackers.com': 'admin',
+  'prateek@thermopackers.com': 'accounts',
   '496saurabh@gmail.com': 'admin',
   'production.thermopackers@gmail.com': 'production',   //shape
   
 
 
 //   'it.thermopackers@gmail.com': 'sales',
-  'chaurasiyapradyumna5955@gmail.com': 'packaging',
-//   'pkchaurasiya5955@gmail.com': 'production',
+  'chaurasiyapradyumna5955@gmail.com': 'admin',
+  'pkchaurasiya5955@gmail.com': 'admin',
 //   'devilaxmi3331@gmail.com': 'production',
 // //   'pkchaurasiya5955@gmail.com': 'dispatch',
 // //   'devilaxmi3331@gmail.com': 'packaging',
