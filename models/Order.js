@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema({
   customerName: String,
   product: String,
   quantity: Number,
-  price: String,
+  price: Number,
   density: String,
    stock: { type: Number, required: true, default: 0 }, // current available stock
   unit: { type: String, default: "pcs" },
