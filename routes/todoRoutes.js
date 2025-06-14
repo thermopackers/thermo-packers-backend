@@ -52,9 +52,8 @@ const updatedTaskUser = await User.findById(task.assignedTo);
 if (updatedTaskUser?.phone) {
   await sendWhatsAppNotification(
     updatedTaskUser.phone,
-      new Date().toLocaleDateString(), // 👈 for {{1}} = today's date
-  `New Task: ${title}`             // 👈 for {{2}} = task title
-  );
+   task.title // ensure this exists
+  )
 }
 
 
