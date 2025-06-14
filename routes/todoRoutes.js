@@ -15,61 +15,74 @@ const router = express.Router();
 router.post(
   "/create",
   authMiddleware(["admin", "accounts"]),
-    upload.array('files', 5), // This is used for multer, but not needed for cloudinary URLs
+  upload.array('files', 5), // multer, even if not used directly here
   async (req, res) => {
-    console.log("POST /create called, user:", req.user);
-    const { title, description, assignedTo, dueDate, repeat,images  } = req.body;
-console.log("Received body:", req.body);
-console.log("typeof images:", typeof req.body.images);
-
     try {
+      const { title, description, assignedTo, dueDate, repeat, images } = req.body;
 
       if (!["admin", "accounts"].includes(req.user.role)) {
-        console.log("User not authorized:", req.user.role);
-        return res
-          .status(403)
-          .json({ message: "Not authorized to assign tasks" });
+        return res.status(403).json({ message: "Not authorized to assign tasks" });
       }
-      console.log("req.user:", req.user);
-      console.log("assignedBy (from req.user.id):", req.user.id);
-            const imageUrls = images || [];
 
-      const task = new ToDo({
-        title,
-        description,
-        assignedBy: req.user.id,
-        assignedTo,
-        dueDate,
-        repeat: repeat || "ONE_TIME", // fallback to ONE_TIME
-        assignedOn: new Date(),
-        images: imageUrls, // ← store Cloudinary URLs directly
+      const assignedToList = Array.isArray(assignedTo) ? assignedTo : [assignedTo];
+      const imageUrls = images || [];
+      const createdTasks = [];
+
+      for (const userId of assignedToList) {
+        const task = new ToDo({
+          title,
+          description,
+          assignedBy: req.user.id,
+          assignedTo: userId,
+          dueDate,
+          repeat: repeat || "ONE_TIME",
+          assignedOn: new Date(),
+          images: imageUrls,
+        });
+
+        await task.save();
+        createdTasks.push(task);
+
+        const updatedUser = await User.findById(userId);
+
+        if (updatedUser) {
+          // 🔔 In-app notification
+          await Notification.create({
+            user: userId,
+            message: `You have been assigned a new task: "${title}"`,
+            link: `/employee/tasks/${task._id}`,
+            createdAt: new Date(),
+          });
+
+          // 📱 WhatsApp (if phone number available)
+          if (updatedUser?.phone) {
+            console.log("📤 Sending WhatsApp to:", updatedUser.phone);
+            await sendWhatsAppNotification(updatedUser.phone, title);
+          }
+
+          // 📧 Optional: Email (if needed)
+          if (updatedUser?.email) {
+            await sendEmail(
+              updatedUser.email,
+              'Task Assigned',
+              `Hi ${updatedUser.name || "User"},\n\nYou have been assigned a new task: "${title}".\n\nPlease check your dashboard.`
+            );
+          }
+        }
+      }
+
+      res.status(201).json({
+        message: "Tasks assigned successfully",
+        tasks: createdTasks,
       });
 
-      await task.save();
-    
-const updatedTaskUser = await User.findById(task.assignedTo);
-
-if (updatedTaskUser?.phone) {
-console.log("📤 [Production] Sending WhatsApp to:", updatedTaskUser.phone);
-console.log("📤 Message:", `You have been assigned a new task: ${task.title}`);
-
-  await sendWhatsAppNotification(
-    updatedTaskUser.phone,
-   task.title // ensure this exists
-  )
-}
-
-
-      console.log("Task saved:", task._id);
-      res.status(201).json(task);
     } catch (err) {
       console.error("Error creating task:", err);
-      res
-        .status(500)
-        .json({ message: "Failed to create task", error: err.message });
+      res.status(500).json({ message: "Failed to create task", error: err.message });
     }
   }
 );
+
 
 // Get tasks for logged-in user
 router.get("/my-tasks", authMiddleware(), async (req, res) => {
@@ -77,7 +90,7 @@ router.get("/my-tasks", authMiddleware(), async (req, res) => {
     const tasks = await ToDo.find({ assignedTo: req.user.id }).populate(
       "assignedBy",
       "name role"
-    );
+    ).sort({ createdAt: -1 }); // newest first
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
