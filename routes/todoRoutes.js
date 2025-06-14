@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
 import sendEmail from "../utils/sendEmail.js";
+import sendWhatsAppNotification from "../utils/sendWhatsApp.js";
 
 const router = express.Router();
 
@@ -46,26 +47,14 @@ console.log("typeof images:", typeof req.body.images);
 
       await task.save();
     
-
-// Create notification for the assigned user
-const notification = new Notification({
-  user: task.assignedTo,
-  message: `You have been assigned a new task: "${task.title}"`,
-  link: `/employee/tasks/${task._id}`,
-  createdAt: new Date(),
-});
-await notification.save();
-
-// sendEmail(to, subject, body)
 const updatedTaskUser = await User.findById(task.assignedTo);
 
-if (updatedTaskUser?.email) {
-  await sendEmail(
-    updatedTaskUser.email,
-    'Task Added',
-    `Hi ${updatedTaskUser.name || "User"},\n\nYour task titled "${task.title}" has been added by ${req.user.role}.\n\nPlease log in to your dashboard to view the latest task.`
+if (updatedTaskUser?.phone) {
+  await sendWhatsAppNotification(
+    updatedTaskUser.phone,
   );
 }
+
 
       console.log("Task saved:", task._id);
       res.status(201).json(task);
@@ -256,6 +245,42 @@ router.delete("/:id", async (req, res) => {
     res.json({ message: "Task deleted successfully" });
   } catch (err) {
     console.error("Error deleting task:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+//
+router.patch("/employee-edit/:id", authMiddleware(), upload.array('doneFiles', 5), async (req, res) => {
+  try {
+    const { doneRemarks } = req.body;
+    const task = await ToDo.findById(req.params.id);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    if (!task.assignedTo.equals(req.user.id)) {
+      return res.status(403).json({ message: "You are not allowed to update this task" });
+    }
+
+    // Upload new files (if any)
+    const uploadedUrls = [];
+    for (const file of req.files || []) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: 'todos',
+        resource_type: 'auto',
+      });
+      uploadedUrls.push(result.secure_url);
+    }
+
+    // Update doneFiles and remarks
+    if (doneRemarks) task.doneRemarks = doneRemarks;
+    if (uploadedUrls.length > 0) task.doneFiles.push(...uploadedUrls);
+
+    // Optional: update doneOn again if desired
+    task.doneOn = new Date();
+
+    await task.save();
+    res.json({ message: "Task updated successfully", task });
+  } catch (err) {
+    console.error("Error updating task by employee:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
