@@ -20,9 +20,10 @@ const sendWhatsAppNotification = async (toNumber,taskTitle) => {
       })
     });
     console.log(`✅ WhatsApp message sent to ${toNumber}`);
-  } catch (err) {
-    console.error("❌ Failed to send WhatsApp message:", err);
-  }
+ } catch (err) {
+  console.error("❌ WhatsApp send failed:", err?.response?.data || err.message || err);
+}
+
 };
 
 export default sendWhatsAppNotification;

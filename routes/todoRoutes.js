@@ -50,6 +50,9 @@ console.log("typeof images:", typeof req.body.images);
 const updatedTaskUser = await User.findById(task.assignedTo);
 
 if (updatedTaskUser?.phone) {
+console.log("📤 [Production] Sending WhatsApp to:", updatedTaskUser.phone);
+console.log("📤 Message:", `You have been assigned a new task: ${task.title}`);
+
   await sendWhatsAppNotification(
     updatedTaskUser.phone,
    task.title // ensure this exists
