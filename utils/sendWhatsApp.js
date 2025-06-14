@@ -10,6 +10,10 @@ const sendWhatsAppNotification = async (toNumber) => {
       from: 'whatsapp:+14155238886', // Twilio Sandbox or approved number
       to: `whatsapp:${toNumber}`,     // e.g., +919876543210
       contentSid: process.env.TASK_TEMPLATE_SID,         // Your approved template SID
+      contentVariables: JSON.stringify({
+        '1': date,           // 👈 corresponds to {{1}}
+        '2': taskTitle       // 👈 corresponds to {{2}}
+      })
     });
     console.log(`✅ WhatsApp message sent to ${toNumber}`);
   } catch (err) {
